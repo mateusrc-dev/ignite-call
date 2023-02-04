@@ -2,6 +2,7 @@ import { Heading, Text } from '@ignite-ui/react'
 import Image from 'next/image' // esse componente do next faz uma otimização automatizada nas imagens
 import { Container, Hero, Preview } from './styles'
 import imageHome from '../../assets/imageHome.png'
+import { ClaimUsernameForm } from './components/ClaimUsernameForm'
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
           Conecte seu calendário e permita que as pessoas marquem agendamentos o
           seu tempo livre.
         </Text>
+        <ClaimUsernameForm />
       </Hero>
       <Preview>
         <Image

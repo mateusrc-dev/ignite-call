@@ -13,14 +13,15 @@ export const Hero = styled('div', {
   maxWidth: 480,
   padding: '0 $10',
 
-  [`${Heading}`]: {
+  [`> ${Heading}`]: {
+    // sinal de maior é para que as estilizações sejam aplicadas apenas no elemento que esteja no primeiro nível
     // vamos estilizar diretamente o Heading (independentemente do valor da propriedade 'as')
     '@media(max-width: 600px)': {
       fontSize: '$6xl',
     },
   },
 
-  [`${Text}`]: {
+  [`> ${Text}`]: {
     // vamos estilizar diretamente o Text (independentemente do valor das propriedade)
     marginTop: '$2',
     color: '$gray200',
@@ -28,8 +29,8 @@ export const Hero = styled('div', {
 })
 
 export const Preview = styled('div', {
-  paddingRight: '$8',
-  overflow: 'hidden',
+  paddingRight: '$8', // propriedades para ajudar na responsividade
+  overflow: 'hidden', // para a imagem poder cortar
 
   '@media(max-width: 600px)': {
     display: 'none',
