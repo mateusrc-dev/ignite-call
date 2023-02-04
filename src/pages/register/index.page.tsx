@@ -4,6 +4,8 @@ import { Container, Form, FormError, Header } from './styles'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect } from 'react'
+import { useRouter } from 'next/router'
 
 const registerFormSchema = z.object({
   // vamos criar o schema com os campos do nosso formulário para fazer validação
@@ -25,10 +27,22 @@ export default function Register() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting }, // isSubmitting retorna quando o formulário está fazendo o processo de submit
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerFormSchema), // temos que passar o schema para o useForm saber como validar o usuário
+    /* defaultValues: { // não vamos usar porque o valor de username tem que mudar dinamicamente, vamos user o setValue
+      username: 'mateus',
+    }, */
   })
+
+  const router = useRouter()
+
+  useEffect(() => {
+    if (router.query.username) {
+      setValue('username', String(router.query.username)) // vamos pegar o valor do parâmetro e atualizar o valor do campo username
+    }
+  }, [router.query?.username, setValue])
 
   async function handleRegister(data: RegisterFormData) {
     console.log(data)
