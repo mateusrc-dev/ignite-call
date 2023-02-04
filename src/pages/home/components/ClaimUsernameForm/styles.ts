@@ -18,7 +18,7 @@ export const FormAnnotation = styled('div', {
   [`> ${Text}`]: {
     color: '$gray400',
     span: {
-      color: 'red',
+      color: '#f75a68',
     },
   },
 })
