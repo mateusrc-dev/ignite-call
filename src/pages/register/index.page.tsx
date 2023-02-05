@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { api } from '../../lib/axios'
+import { AxiosError } from 'axios'
 
 const registerFormSchema = z.object({
   // vamos criar o schema com os campos do nosso formulário para fazer validação
@@ -49,6 +50,11 @@ export default function Register() {
     try {
       await api.post('/users', { name: data.name, username: data.username }) // enviando os dados no corpo da requisição para nossa api-route users
     } catch (err) {
+      if (err instanceof AxiosError && err?.response?.data?.message) {
+        alert(err.response.data.message)
+        return
+      }
+
       console.log(err)
     }
   }
