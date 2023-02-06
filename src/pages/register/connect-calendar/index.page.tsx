@@ -2,15 +2,11 @@ import { Button, Heading, MultiStep, Text } from '@ignite-ui/react'
 import { ArrowRight } from 'phosphor-react'
 import { Container, Header } from '../styles'
 import { ConnectBox, ConnectItem } from './styles'
-import {
-  signIn,
-  useSession,
-} from 'next-auth/react' /* vamos especificar na função qual é o provider */
+import { signIn } from 'next-auth/react' /* vamos especificar na função qual é o provider */
 // import { api } from '../../lib/axios'
 
 export default function Register() {
   // async function handleRegister(data: RegisterFormData) {}
-  const session = useSession()
 
   return (
     <Container>
@@ -34,7 +30,6 @@ export default function Register() {
             Conectar <ArrowRight />
           </Button>
         </ConnectItem>
-        <Text>{JSON.stringify(session.data)}</Text>
 
         <Button type="submit">
           Próximo passo <ArrowRight />
