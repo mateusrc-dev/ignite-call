@@ -8,7 +8,7 @@ import {
   TextInput,
 } from '@ignite-ui/react'
 import { ArrowRight } from 'phosphor-react'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { useFieldArray, useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import { Container, Header } from '../styles'
 import {
@@ -29,16 +29,17 @@ export default function TimeInterval() {
     handleSubmit,
     control,
     formState: { isSubmitting, errors },
+    watch,
   } = useForm({
     defaultValues: {
       intervals: [
         // array com valores padrão de cada dia da semana
         { weekDay: 0, enabled: false, startTime: '08:00', endTime: '18:00' },
-        { weekDay: 1, true: false, startTime: '08:00', endTime: '18:00' },
-        { weekDay: 2, true: false, startTime: '08:00', endTime: '18:00' },
-        { weekDay: 3, true: false, startTime: '08:00', endTime: '18:00' },
-        { weekDay: 4, true: false, startTime: '08:00', endTime: '18:00' },
-        { weekDay: 5, true: false, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 1, enabled: true, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 2, enabled: true, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 3, enabled: true, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 4, enabled: true, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 5, enabled: true, startTime: '08:00', endTime: '18:00' },
         { weekDay: 6, enabled: false, startTime: '08:00', endTime: '18:00' },
       ],
     },
@@ -52,6 +53,8 @@ export default function TimeInterval() {
   }) // esse hook nos permite iterar um campo do formulário que é um array
 
   async function handleSetTimeIntervals() {}
+
+  const intervals = watch('intervals') // para assistir a mudança dos campos do formulário em tempo real
 
   return (
     <Container>
@@ -70,7 +73,22 @@ export default function TimeInterval() {
             return (
               <IntervalItem key={field.id}>
                 <IntervalDay>
-                  <Checkbox />
+                  <Controller
+                    name={`intervals.${index}.enabled`}
+                    control={
+                      control
+                    } /* é uma api que nos permite fazer qualquer coisa nos campos (alterar, pegar valor de campo, registrar) */
+                    render={({ field }) => {
+                      return (
+                        <Checkbox
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked === true) // para o valor de onCheckedChange não ser indeterminado
+                          }}
+                          checked={field.value} // para recuperar o valor inicial de enabled
+                        />
+                      )
+                    }} // essa propriedade renderiza o checkbox - função do render recebe propriedades
+                  />
                   <Text>{weekDays[field.weekDay]}</Text>
                 </IntervalDay>
                 <IntervalInputs>
@@ -78,12 +96,14 @@ export default function TimeInterval() {
                     size="sm"
                     type="time"
                     step={60}
+                    disabled={intervals[index].enabled === false}
                     {...register(`intervals.${index}.startTime`)}
                   />
                   <TextInput
                     size="sm"
                     type="time"
                     step={60}
+                    disabled={intervals[index].enabled === false}
                     {...register(`intervals.${index}.endTime`)}
                   />
                 </IntervalInputs>
