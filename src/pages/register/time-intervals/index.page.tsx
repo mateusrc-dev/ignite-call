@@ -1,3 +1,4 @@
+import { convertTimeStringToMinutes } from '@/utils/convert-time-string-to-minutes'
 import { getWeekDays } from '@/utils/get-week-days'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -36,10 +37,34 @@ const timeIntervalsFormSchema = z.object({
     .transform((intervals) => intervals.filter((interval) => interval.enabled)) // transform serve para modificar o formato do array
     .refine((intervals) => intervals.length > 0, {
       message: 'Você precisa selecionar pelo menos um dia da semana!',
-    }), // após transform para fazer validação no zod temos que usar o refine que retorna true ou false
+    }) // após transform para fazer validação no zod temos que usar o refine que retorna true ou false
+    .transform((intervals) => {
+      return intervals.map((interval) => {
+        return {
+          // vamos sobrescrever cada um dos interval com novos campos - enabled não é necessário
+          weekDay: interval.weekDay,
+          startTimeInMinutes: convertTimeStringToMinutes(interval.startTime), // é melhor salvar no backend com esse formato - em minutos
+          endTimeInMinutes: convertTimeStringToMinutes(interval.endTime),
+        }
+      })
+    })
+    .refine(
+      (intervals) => {
+        return intervals.every(
+          // vamos verificar se todos os itens do array cumprem com essa regra abaixo (retorna true ou false) - a diferença entre tempo inicial e final ser maior que uma hora
+          (interval) =>
+            interval.endTimeInMinutes - 60 >= interval.startTimeInMinutes,
+        )
+      },
+      {
+        message:
+          'O horário de término deve ser pelo menos 1h distante do início.',
+      },
+    ),
 })
 
-type TimeIntervalsFormData = z.infer<typeof timeIntervalsFormSchema>
+type TimeIntervalsFormInput = z.input<typeof timeIntervalsFormSchema> // dados de entrada do zod - antes das transformações
+type TimeIntervalsFormOutput = z.output<typeof timeIntervalsFormSchema> // dados de saída do zod - depois das transformações
 
 export default function TimeInterval() {
   const {
@@ -48,7 +73,7 @@ export default function TimeInterval() {
     control,
     formState: { isSubmitting, errors },
     watch,
-  } = useForm({
+  } = useForm<TimeIntervalsFormInput>({
     resolver: zodResolver(timeIntervalsFormSchema),
     defaultValues: {
       intervals: [
@@ -71,8 +96,9 @@ export default function TimeInterval() {
     name: 'intervals', // nome do campo
   }) // esse hook nos permite iterar um campo do formulário que é um array
 
-  async function handleSetTimeIntervals(data: TimeIntervalsFormData) {
-    console.log(data)
+  async function handleSetTimeIntervals(data: any) {
+    const formData = data as TimeIntervalsFormOutput // vamos forçar a tipagem
+    console.log(formData)
   }
 
   const intervals = watch('intervals') // para assistir a mudança dos campos do formulário em tempo real
