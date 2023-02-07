@@ -1,4 +1,5 @@
 import { getWeekDays } from '@/utils/get-week-days'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Button,
   Checkbox,
@@ -12,6 +13,7 @@ import { useFieldArray, useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import { Container, Header } from '../styles'
 import {
+  FormError,
   IntervalBox,
   IntervalContainer,
   IntervalDay,
@@ -20,8 +22,24 @@ import {
 } from './styles'
 
 const timeIntervalsFormSchema = z.object({
-  // vamos colocar o schema dos dados que vamos validar
+  // vamos colocar o schema dos dados que vamos validar - no caso nossos dados vão ser um array com objetos
+  intervals: z
+    .array(
+      z.object({
+        weekDay: z.number().min(0).max(6),
+        enabled: z.boolean(),
+        startTime: z.string(),
+        endTime: z.string(),
+      }),
+    )
+    .length(7) // validação de que sempre vamos receber 7 objetos do array (7 dias da semana)
+    .transform((intervals) => intervals.filter((interval) => interval.enabled)) // transform serve para modificar o formato do array
+    .refine((intervals) => intervals.length > 0, {
+      message: 'Você precisa selecionar pelo menos um dia da semana!',
+    }), // após transform para fazer validação no zod temos que usar o refine que retorna true ou false
 })
+
+type TimeIntervalsFormData = z.infer<typeof timeIntervalsFormSchema>
 
 export default function TimeInterval() {
   const {
@@ -31,6 +49,7 @@ export default function TimeInterval() {
     formState: { isSubmitting, errors },
     watch,
   } = useForm({
+    resolver: zodResolver(timeIntervalsFormSchema),
     defaultValues: {
       intervals: [
         // array com valores padrão de cada dia da semana
@@ -52,7 +71,9 @@ export default function TimeInterval() {
     name: 'intervals', // nome do campo
   }) // esse hook nos permite iterar um campo do formulário que é um array
 
-  async function handleSetTimeIntervals() {}
+  async function handleSetTimeIntervals(data: TimeIntervalsFormData) {
+    console.log(data)
+  }
 
   const intervals = watch('intervals') // para assistir a mudança dos campos do formulário em tempo real
 
@@ -111,7 +132,12 @@ export default function TimeInterval() {
             )
           })}
         </IntervalContainer>
-        <Button type="submit">
+
+        {errors.intervals && (
+          <FormError size="sm">{errors.intervals.message}</FormError>
+        )}
+
+        <Button type="submit" disabled={isSubmitting}>
           Próximo passo! <ArrowRight />
         </Button>
       </IntervalBox>
