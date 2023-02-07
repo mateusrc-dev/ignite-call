@@ -9,7 +9,7 @@ import {
 import { useRouter } from 'next/router'
 // import { api } from '../../lib/axios'
 
-export default function Register() {
+export default function ConnectCalendar() {
   const session = useSession()
   const router = useRouter()
 
