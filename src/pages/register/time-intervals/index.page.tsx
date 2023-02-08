@@ -1,3 +1,4 @@
+import { api } from '@/lib/axios'
 import { convertTimeStringToMinutes } from '@/utils/convert-time-string-to-minutes'
 import { getWeekDays } from '@/utils/get-week-days'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -97,8 +98,11 @@ export default function TimeInterval() {
   }) // esse hook nos permite iterar um campo do formulário que é um array
 
   async function handleSetTimeIntervals(data: any) {
-    const formData = data as TimeIntervalsFormOutput // vamos forçar a tipagem
-    console.log(formData)
+    const { intervals } = data as TimeIntervalsFormOutput // vamos forçar a tipagem
+    console.log(intervals)
+    await api.post('/users/time-intervals', {
+      intervals,
+    })
   }
 
   const intervals = watch('intervals') // para assistir a mudança dos campos do formulário em tempo real

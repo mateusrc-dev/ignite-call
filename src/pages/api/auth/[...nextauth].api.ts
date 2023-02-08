@@ -17,7 +17,7 @@ export function buildNextAuthOptions(
         authorization: {
           params: {
             scope:
-              'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar', // aqui é para pedir a autorização do google calendar e dados do usuário
+              'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar', // aqui é para pedir a autorização ao usuário do google calendar e dados do usuário
           },
         },
         profile: (profile: GoogleProfile) => {

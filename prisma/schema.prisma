@@ -12,20 +12,21 @@ datasource db {
 
 model User {
   // model é pra definir uma entidade
-  id         String    @id @default(uuid()) // @id é pra determinar que o campo vai ser o primary key - 'uuid' é pra gerar automaticamente o id
-  username   String    @unique // unique é para que não seja permitido carregar username igual
+  id         String   @id @default(uuid()) // @id é pra determinar que o campo vai ser o primary key - 'uuid' é pra gerar automaticamente o id
+  username   String   @unique // unique é para que não seja permitido carregar username igual
   name       String
-  email      String?   @unique
+  email      String?  @unique
   avatar_url String?
-  created_at DateTime  @default(now()) // now é uma função do prisma que vai preencher o campo com o valor atual do registro no banco de dados
+  created_at DateTime @default(now()) // now é uma função do prisma que vai preencher o campo com o valor atual do registro no banco de dados
 
-  accounts   Account[]
-  sessions   Session[]
+  accounts         Account[] // relacionamento com outras entidades - usuário pode ter mais de uma conta...
+  sessions         Session[]
+  timeIntervals UserTimeInterval[]
 
   @@map("users") // colocando o nome da tabela
 }
 
-model Account { // essa entidade é a integração do usuário com algum provider (pode ser mais de um)
+model Account {
   id                  String  @id @default(cuid())
   user_id             String
   type                String
@@ -45,11 +46,24 @@ model Account { // essa entidade é a integração do usuário com algum provide
   @@map("accounts") // colocando o nome da tabela
 }
 
-model Session { // cada vez que o usuário fazer o login numa máquina diferente, teremos uma sessão
+model Session {
   id            String   @id @default(cuid())
   session_token String   @unique
   user_id       String
   expires       DateTime
   user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
   @@map("sessions") // colocando o nome da tabela
+}
+
+model UserTimeInterval {
+  // cada entrada que tivermos aqui dentro vai ser relacionado a um intervalo de tempo disponível para aquele usuário
+  id                    String @id @default(uuid())
+  week_day              Int
+  time_start_in_minutes Int
+  time_end_in_minutes   Int
+  user                  User   @relation(fields: [user_id], references: [id]) // para dizer que esse model está relacionado com User
+  user_id               String
+
+  @@map("user_time_intervals")
 }
