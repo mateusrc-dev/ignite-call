@@ -10,4 +10,8 @@ declare module 'next-auth' {
     username: string
     avatar_url: string
   }
+
+  interface Session {
+    user: User, // para atualizar a tipagem de Session para parar de dar erro no id
+  }
 }
