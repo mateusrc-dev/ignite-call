@@ -15,12 +15,13 @@ model User {
   id         String   @id @default(uuid()) // @id é pra determinar que o campo vai ser o primary key - 'uuid' é pra gerar automaticamente o id
   username   String   @unique // unique é para que não seja permitido carregar username igual
   name       String
+  bio        String?
   email      String?  @unique
   avatar_url String?
   created_at DateTime @default(now()) // now é uma função do prisma que vai preencher o campo com o valor atual do registro no banco de dados
 
-  accounts         Account[] // relacionamento com outras entidades - usuário pode ter mais de uma conta...
-  sessions         Session[]
+  accounts      Account[] // relacionamento com outras entidades - usuário pode ter mais de uma conta...
+  sessions      Session[]
   timeIntervals UserTimeInterval[]
 
   @@map("users") // colocando o nome da tabela
