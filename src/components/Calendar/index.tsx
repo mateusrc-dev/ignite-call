@@ -11,6 +11,16 @@ import {
   CalendarTitle,
 } from './styles'
 
+interface CalendarWeek {
+  week: number
+  days: Array<{
+    date: dayjs.Dayjs
+    disabled: boolean
+  }>
+}
+
+type CalendarWeeks = CalendarWeek[]
+
 export function Calendar() {
   const [currentDate, setCurrentDate] = useState(() => {
     return dayjs().set('date', 1) // para pegar o mês atual
@@ -49,11 +59,53 @@ export function Calendar() {
       length: firstWeekDay, // criando um array com os dias que estão faltando
     })
       .map((_, i) => {
-        return currentDate.subtract(i + 1, 'day') // pegando a data no dia 1 e retornando de acordo com o valor de length
+        return currentDate.subtract(i + 1, 'day') // pegando a data no dia 1 e retornando subtraindo de acordo com o valor de length
       })
       .reverse()
 
-    return [...previousMonthFillArray, ...daysInMonthArray]
+    const lastDayInCurrentMonth = currentDate.set(
+      'date',
+      currentDate.daysInMonth(),
+    )
+
+    const lastWeekDay = lastDayInCurrentMonth.get('day') // pegando o útimo dia da semana do mês
+
+    const nextMonthFillArray = Array.from({
+      length: 7 - (lastWeekDay + 1), // criando um array com os dias que estão faltando posteriormente ao último dia do mês
+    }).map((_, i) => {
+      return lastDayInCurrentMonth.add(i + 1, 'day')
+    }) // pegando a data no último dia do mês e retornando adicionando de acordo com o valor de length
+
+    const calendarDays = [
+      ...previousMonthFillArray.map((date) => {
+        return { date, disabled: true }
+      }),
+      ...daysInMonthArray.map((date) => {
+        return { date, disabled: false }
+      }),
+      ...nextMonthFillArray.map((date) => {
+        return { date, disabled: true }
+      }),
+    ]
+
+    const calendarWeeks = calendarDays.reduce<CalendarWeeks>(
+      (weeks, _, i, original) => {
+        // weeks é o CalendarWeeks que é o array que vamos manipular para ser retornado no final, '_' é o calendarDays que não será retornado nenhum conteúdo, 'i' é a quantidade de elementos (datas) dentro de calendarDays, 'original' retorna o array original que é o calendarDays
+        const isNewWeek = i % 7 === 0
+
+        if (isNewWeek) {
+          weeks.push({
+            week: i / 7 + 1,
+            days: original.slice(i, i + 7),
+          })
+        }
+
+        return weeks
+      },
+      [],
+    )
+
+    return calendarWeeks
   }, [currentDate])
 
   console.log(calendarWeeks)
@@ -83,21 +135,21 @@ export function Calendar() {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>
-              <CalendarDay>1</CalendarDay>
-            </td>
-            <td>
-              <CalendarDay disabled>2</CalendarDay>
-            </td>
-            <td>
-              <CalendarDay>3</CalendarDay>
-            </td>
-          </tr>
+          {calendarWeeks.map(({ week, days }) => {
+            return (
+              <tr key={week}>
+                {days.map(({ date, disabled }) => {
+                  return (
+                    <td key={date.toString()}>
+                      <CalendarDay disabled={disabled}>
+                        {date.get('date')}
+                      </CalendarDay>
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
         </tbody>
       </CalendarBody>
     </CalendarContainer>
