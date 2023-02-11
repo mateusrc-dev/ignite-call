@@ -49,22 +49,6 @@ export function CalendarStep() {
     },
   )
 
-  /* useEffect(() => {
-    if (!selectedDate) {
-      return
-    }
-
-    api
-      .get(`/users/${username}/availability`, {
-        params: {
-          date: dayjs(selectedDate).format('YYYY-MM-DD'),
-        }, // fazendo a requisição para pegar os hórarios da data do usuário
-      })
-      .then((response) => {
-        setAvailability(response.data)
-      })
-  }, [selectedDate, username]) */
-
   return (
     <Container isTimePickerOpen={isDateSelected}>
       <Calendar selectedDate={selectedDate} onDateSelected={setSelectedDate} />

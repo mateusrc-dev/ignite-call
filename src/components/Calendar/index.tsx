@@ -2,6 +2,7 @@ import { getWeekDays } from '@/utils/get-week-days'
 import dayjs from 'dayjs'
 import { CaretLeft, CaretRight } from 'phosphor-react'
 import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import {
   CalendarActions,
   CalendarBody,
@@ -10,6 +11,8 @@ import {
   CalendarHeader,
   CalendarTitle,
 } from './styles'
+import { api } from '@/lib/axios'
+import { useRouter } from 'next/router'
 
 interface CalendarWeek {
   week: number
@@ -21,6 +24,10 @@ interface CalendarWeek {
 
 type CalendarWeeks = CalendarWeek[]
 
+interface BlockedDates {
+  blockedWeekDays: number[]
+}
+
 interface CalendarProps {
   selectedDate: Date | null
   onDateSelected: (date: Date) => void
@@ -30,6 +37,8 @@ export function Calendar({ selectedDate, onDateSelected }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(() => {
     return dayjs().set('date', 1) // para pegar o mês atual
   })
+
+  const router = useRouter()
 
   console.log(currentDate)
   function handlePreviousMonth() {
@@ -48,6 +57,21 @@ export function Calendar({ selectedDate, onDateSelected }: CalendarProps) {
 
   const currentMonth = currentDate.format('MMMM') // fazendo formatação
   const currentYear = currentDate.format('YYYY')
+
+  const username = String(router.query.username)
+
+  const { data: blockedDates } = useQuery<BlockedDates>( // vamos usar o useQuery para melhorar a performance das requisições - vão ficar guardadas em cache
+    ['blocked-dates', currentDate.get('year'), currentDate.get('month')], // passamos aqui a chave key e os parâmetros usados na requisição
+    async () => {
+      const response = await api.get(`/users/${username}/blocked-dates`, {
+        params: {
+          year: currentDate.get('year'),
+          month: currentDate.get('month'),
+        }, // fazendo a requisição para pegar os hórarios da data do usuário
+      })
+      return response.data
+    },
+  )
 
   const calendarWeeks = useMemo(() => {
     // useMemo é para a função não ser ativada sempre que o componente pai renderizar
@@ -86,7 +110,12 @@ export function Calendar({ selectedDate, onDateSelected }: CalendarProps) {
         return { date, disabled: true }
       }),
       ...daysInMonthArray.map((date) => {
-        return { date, disabled: date.endOf('day').isBefore(new Date()) } // endOf é para saber se o dia terminou, pois a função retorna o horário final do dia de 'date, se esse horário for anterior a data atual, então será true
+        return {
+          date,
+          disabled:
+            date.endOf('day').isBefore(new Date()) ||
+            blockedDates?.blockedWeekDays.includes(date.get('day')),
+        } // endOf é para saber se o dia terminou, pois a função retorna o horário final do dia de 'date, se esse horário for anterior a data atual, então será true - também vamos desabilitar caso o 'date' esteja incluído em blockedWeekDays
       }),
       ...nextMonthFillArray.map((date) => {
         return { date, disabled: true }
@@ -111,7 +140,7 @@ export function Calendar({ selectedDate, onDateSelected }: CalendarProps) {
     )
 
     return calendarWeeks
-  }, [currentDate])
+  }, [currentDate, blockedDates])
 
   console.log(calendarWeeks)
 
