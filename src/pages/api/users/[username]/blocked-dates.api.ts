@@ -44,5 +44,15 @@ export default async function handle(
     )
   }) // dias da semana que vamos bloquear
 
-  return res.json({ blockedWeekDays })
+  const blockedDatesRaw = await prisma.$queryRaw`
+    SELECT * 
+    FROM schedulings S /*vamos nomear para S o schedulings*/
+
+    WHERE S.user_id = ${
+      user.id
+    } /*vamos pegar somente os schedulings de um determinado usuário*/
+      AND DATE_FORMAT(S.date, "%Y-%m") = ${`${year}-${month}`}
+  ` // vamos fazer uma query mais bruta, por isso o prismaRaw - DATE_FORMAT faz parte do mysql, por isso mudamos o tipo do banco
+
+  return res.json({ blockedWeekDays, blockedDatesRaw })
 }

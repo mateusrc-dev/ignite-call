@@ -75,6 +75,11 @@ export function Calendar({ selectedDate, onDateSelected }: CalendarProps) {
 
   const calendarWeeks = useMemo(() => {
     // useMemo é para a função não ser ativada sempre que o componente pai renderizar
+    if (!blockedDates) {
+      // calendário só vai aparecer quando a busca pelas datas bloqueadas finalizar
+      return []
+    }
+
     const daysInMonthArray = Array.from({
       length: currentDate.daysInMonth(),
     }).map((_, i) => {
@@ -114,7 +119,7 @@ export function Calendar({ selectedDate, onDateSelected }: CalendarProps) {
           date,
           disabled:
             date.endOf('day').isBefore(new Date()) ||
-            blockedDates?.blockedWeekDays.includes(date.get('day')),
+            blockedDates.blockedWeekDays.includes(date.get('day')),
         } // endOf é para saber se o dia terminou, pois a função retorna o horário final do dia de 'date, se esse horário for anterior a data atual, então será true - também vamos desabilitar caso o 'date' esteja incluído em blockedWeekDays
       }),
       ...nextMonthFillArray.map((date) => {
