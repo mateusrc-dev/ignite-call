@@ -32,7 +32,7 @@ export default async function handle(
   const isPastDate = referenceDate.endOf('day').isBefore(new Date()) // é importante fazer a validação se o dia já passou no backend também
 
   if (isPastDate) {
-    return res.json({ availability: [] }) // se tiver passado o dia não haverá nenhuma disponibilidade
+    return res.json({ possibleTimes: [], availableTimes: [] }) // se tiver passado o dia não haverá nenhuma disponibilidade
   }
 
   const userAvailability = await prisma.userTimeInterval.findFirst({
@@ -45,7 +45,7 @@ export default async function handle(
 
   if (!userAvailability) {
     // testando se não houver horário disponível para esse usuário
-    return res.json({ availability: [] })
+    return res.json({ possibleTimes: [], availableTimes: [] })
   }
 
   const { time_end_in_minutes, time_start_in_minutes } = userAvailability
@@ -59,5 +59,26 @@ export default async function handle(
     },
   ) // vamos criar um array com todos os horários disponíveis entre os intervalo disponível no dia
 
-  return res.json({ possibleTimes })
+  const blockedTimes = await prisma.scheduling.findMany({
+    select: {
+      // selecionando informações que vamos querer
+      date: true,
+    },
+    where: {
+      // procurar todos os agendamentos que tem o determinado usuário entre os determinados horários
+      user_id: user.id,
+      date: {
+        gte: referenceDate.set('hour', startHour).toDate(),
+        lte: referenceDate.set('hour', endHour).toDate(),
+      },
+    },
+  })
+
+  const availableTimes = possibleTimes.filter((time) => {
+    return !blockedTimes.some(
+      (blockedTime) => blockedTime.date.getHours() === time,
+    )
+  }) // pegando todos os horários disponíveis e validando se não existe nenhum agendamento neles
+
+  return res.json({ possibleTimes, availableTimes })
 }
