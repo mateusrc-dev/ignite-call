@@ -44,15 +44,29 @@ export default async function handle(
     )
   }) // dias da semana que vamos bloquear
 
-  const blockedDatesRaw = await prisma.$queryRaw`
-    SELECT * 
-    FROM schedulings S /*vamos nomear para S o schedulings*/
+  const blockedDatesRaw: Array<{ date: number }> = await prisma.$queryRaw`
+    SELECT
+      EXTRACT(DAY FROM S.date) AS date, /* vamos extrair somente o dia que temos schedules */
+      COUNT(S.date) AS amount, /* para contar quantos schedules (horários ocupados) tem no dia */
+      ((UTI.time_end_in_minutes - UTI.time_start_in_minutes) / 60) AS size /* quantos horários vamos ter disponíveis no dia*/
+    FROM schedulings S /*vamos nomear para S*/
+
+    LEFT JOIN user_time_intervals UTI /*unindo com a tabela userTimeIntervals pelas datas*/
+      ON UTI.week_day = WEEKDAY(DATE_ADD(S.date, INTERVAL 1 DAY)) /*WEEKDAY - função do mysql - vamos igualar os dias da semana do JS e MySql*/
 
     WHERE S.user_id = ${
+      /* vamos fazer uma query mais bruta, por isso o prismaRaw - DATE_FORMAT faz parte do mysql, por isso mudamos o tipo do banco */
       user.id
-    } /*vamos pegar somente os schedulings de um determinado usuário*/
-      AND DATE_FORMAT(S.date, "%Y-%m") = ${`${year}-${month}`}
-  ` // vamos fazer uma query mais bruta, por isso o prismaRaw - DATE_FORMAT faz parte do mysql, por isso mudamos o tipo do banco
+    } 
+      AND DATE_FORMAT(S.date, "%Y-%m") = ${`${year}-${month}`} /*vamos pegar somente os schedulings de um determinado usuário*/
 
-  return res.json({ blockedWeekDays, blockedDatesRaw })
+      GROUP BY EXTRACT(DAY FROM S.date),
+        ((UTI.time_end_in_minutes - UTI.time_start_in_minutes) / 60)
+
+      HAVING amount >= size /*HAVING é para retornar todos os registros que sobraram da listagem em que o amount seja maior ou igual que o size*/
+  `
+
+  const blockedDates = blockedDatesRaw.map((item) => item.date) // vamos pegar somente os dias em que o amount seja maior ou igual que o size
+
+  return res.json({ blockedWeekDays, blockedDates })
 }
