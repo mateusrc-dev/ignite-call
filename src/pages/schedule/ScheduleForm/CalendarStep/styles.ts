@@ -12,10 +12,6 @@ export const Container = styled(Box, {
       // vamos criar uma propriedade que pode ser passada pra esse componente
       true: {
         gridTemplateColumns: '1fr 280px', // cada coluna vai ter 280px
-
-        '@media(max-width: 900px)': {
-          gridTemplateColumns: '1fr', // para ficar apenas uma coluna
-        },
       },
       false: {
         width: 540,
