@@ -65,17 +65,18 @@ export default async function handle(
       date: true,
     },
     where: {
-      // procurar todos os agendamentos que tem o determinado usuário entre os determinados horários
+      // procurar todos os agendamentos que tem o determinado usuário entre os determinados horários de um determinado dia
       user_id: user.id,
       date: {
-        gte: referenceDate.set('hour', startHour).toDate(),
-        lte: referenceDate.set('hour', endHour).toDate(),
+        gte: referenceDate.set('hour', startHour).toDate(), // gte = great than or equal - todos os valores onde a data seja maior que ou igual a...
+        lte: referenceDate.set('hour', endHour).toDate(), // menor ou igual a...
       },
     },
   })
 
   const availableTimes = possibleTimes.filter((time) => {
     const isTimeBlocked = blockedTimes.some(
+      // some significa pelo menos um - validando se não existe pelo menos um blockedTime igual a time
       (blockedTime) => blockedTime.date.getHours() === time, // validando se não existe nenhum agendamento no horário
     )
 

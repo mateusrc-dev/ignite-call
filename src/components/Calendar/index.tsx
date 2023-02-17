@@ -82,7 +82,7 @@ export function Calendar({ selectedDate, onDateSelected }: CalendarProps) {
     }
 
     const daysInMonthArray = Array.from({
-      length: currentDate.daysInMonth(),
+      length: currentDate.daysInMonth(), // daysInMonth é para pegar quantos dias tem no mês do dia corrente
     }).map((_, i) => {
       // no map não retorna nenhum conteúdo porque estamos criando um array
       return currentDate.set('date', i + 1)
@@ -131,7 +131,7 @@ export function Calendar({ selectedDate, onDateSelected }: CalendarProps) {
 
     const calendarWeeks = calendarDays.reduce<CalendarWeeks>(
       (weeks, _, i, original) => {
-        // weeks é o CalendarWeeks que é o array que vamos manipular para ser retornado no final, '_' é o calendarDays que não será retornado nenhum conteúdo, 'i' é a quantidade de elementos (datas) dentro de calendarDays, 'original' retorna o array original que é o calendarDays
+        // weeks é o CalendarDays que é o array que vamos manipular para ser retornado no final, '_' é o calendarDays que não será retornado nenhum conteúdo, 'i' é a quantidade de elementos (datas) dentro de calendarDays, 'original' retorna o array original que é o calendarDays
         const isNewWeek = i % 7 === 0
 
         if (isNewWeek) {
